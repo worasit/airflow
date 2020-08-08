@@ -2,17 +2,15 @@ from datetime import timedelta
 
 # The DAG object; we'll need this to instantiate a DAG
 from airflow import DAG
-
-# Operators; we need this to operate
+# Operators; we need this to operate!
 from airflow.operators.bash_operator import BashOperator
-
 from airflow.utils.dates import days_ago
 
 # These args will get passed on to each operator
 # You can override them on a per-task basis during operator initialization
 default_args = {
     'owner': 'airflow',
-    'depend_on_past': False,
+    'depends_on_past': False,
     'start_date': days_ago(2),
     'email': ['airflow@example.com'],
     'email_on_failure': False,
@@ -33,19 +31,18 @@ default_args = {
     # 'sla_miss_callback': yet_another_function,
     # 'trigger_rule': 'all_success'
 }
-
 dag = DAG(
-    dag_id='tutorial',
+    'tutorial',
     default_args=default_args,
     description='A simple tutorial DAG',
-    schedule_interval=timedelta(days=1)
+    schedule_interval=timedelta(days=1),
 )
 
 # t1, t2 and t3 are examples of tasks created by instantiating operators
 t1 = BashOperator(
     task_id='print_date',
     bash_command='date',
-    dag=dag
+    dag=dag,
 )
 
 t2 = BashOperator(
@@ -53,19 +50,17 @@ t2 = BashOperator(
     depends_on_past=False,
     bash_command='sleep 5',
     retries=3,
-    dag=dag
+    dag=dag,
 )
-
 dag.doc_md = __doc__
 
-"""\
+t1.doc_md = """\
 #### Task Documentation
 You can document your task using the attributes `doc_md` (markdown),
 `doc` (plain text), `doc_rst`, `doc_json`, `doc_yaml` which gets
 rendered in the UI's Task Instance Details page.
 ![img](http://montcs.bloomu.edu/~bobmon/Semesters/2012-01/491/import%20soul.png)
 """
-
 templated_command = """
 {% for i in range(5) %}
     echo "{{ ds }}"
@@ -79,7 +74,7 @@ t3 = BashOperator(
     depends_on_past=False,
     bash_command=templated_command,
     params={'my_param': 'Parameter I passed in'},
-    dag=dag
+    dag=dag,
 )
 
 t1 >> [t2, t3]
